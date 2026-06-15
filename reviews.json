@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "name": "Carlos Mendoza",
+    "stars": 5,
+    "comment": "La polo Ralph Lauren es de muy buena calidad. Llegó perfecta."
+  },
+  {
+    "id": 2,
+    "name": "Laura Sánchez",
+    "stars": 5,
+    "comment": "Los AirPods funcionan excelente y el precio fue increíble."
+  },
+  {
+    "id": 3,
+    "name": "Miguel Torres",
+    "stars": 4,
+    "comment": "Las zapatillas son muy cómodas y se ven geniales."
+  }
+]

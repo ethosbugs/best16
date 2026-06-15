@@ -1,0 +1,74 @@
+[
+  {
+    "id": 1,
+    "name": "Camiseta Polo Ralph Lauren",
+    "desc": "Camiseta polo clásica de alta calidad con logo bordado.",
+    "category": "Ropa",
+    "price": 6,
+    "img": "https://picsum.photos/id/1015/400/500",
+    "link": "https://c.onlyyaff.app/9sysjs"
+  },
+  {
+    "id": 2,
+    "name": "Adidas Soccer Jersey",
+    "desc": "Camiseta de fútbol Adidas con diseño moderno.",
+    "category": "Ropa",
+    "price": 15.1,
+    "img": "https://picsum.photos/id/201/400/500",
+    "link": "https://c.onlyyaff.app/9t8ktT"
+  },
+  {
+    "id": 3,
+    "name": "Ralph Lauren Cap",
+    "desc": "Gorra de béisbol estilo Ralph Lauren, muy trendy.",
+    "category": "Accesorios",
+    "price": 6.75,
+    "img": "https://picsum.photos/id/180/400/500",
+    "link": "https://c.onlyyaff.app/9t8bB2"
+  },
+  {
+    "id": 4,
+    "name": "Adidas Football Top",
+    "desc": "Camiseta de fútbol roja con detalles premium.",
+    "category": "Ropa",
+    "price": 12.45,
+    "img": "https://picsum.photos/id/251/400/500",
+    "link": "https://c.onlyyaff.app/9mBjUk"
+  },
+  {
+    "id": 5,
+    "name": "Printed T-Shirt",
+    "desc": "Camiseta oversize con diseño gráfico.",
+    "category": "Ropa",
+    "price": 12.19,
+    "img": "https://picsum.photos/id/133/400/500",
+    "link": "https://c.onlyyaff.app/Wlecf"
+  },
+  {
+    "id": 6,
+    "name": "Adidas F50 Cleats",
+    "desc": "Botines de fútbol Adidas F50 de alto rendimiento.",
+    "category": "Calzado",
+    "price": 29.81,
+    "img": "https://picsum.photos/id/866/400/500",
+    "link": "https://c.onlyyaff.app/9kMbml"
+  },
+  {
+    "id": 7,
+    "name": "AirPods Pro",
+    "desc": "Auriculares inalámbricos premium con gran sonido.",
+    "category": "Accesorios",
+    "price": 10,
+    "img": "https://picsum.photos/id/870/400/500",
+    "link": "https://c.onlyyaff.app/9mtdy2"
+  },
+  {
+    "id": 8,
+    "name": "Golden Superstar Sneakers",
+    "desc": "Zapatillas Golden Goose estilo urbano.",
+    "category": "Calzado",
+    "price": 31,
+    "img": "https://picsum.photos/id/1015/400/500",
+    "link": "https://c.onlyyaff.app/9sCKlO"
+  }
+]

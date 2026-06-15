@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BEST16 - Lo que uso, lo que recomiendo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap');
+        
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+        
+        .title-font {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .hero-glow {
+            box-shadow: 0 0 25px -5px rgb(125 211 252 / 0.3), 0 0 10px -5px rgb(125 211 252 / 0.3);
+        }
+
+        .product-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease;
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-black text-zinc-200 min-h-screen">
+    <!-- NAVBAR -->
+    <nav class="border-b border-zinc-800 bg-black/80 backdrop-blur-md fixed w-full z-50">
+        <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+            <div class="flex items-center gap-x-3">
+                <div class="w-9 h-9 bg-sky-400 rounded-2xl flex items-center justify-center text-black font-bold text-2xl title-font">B</div>
+                <span class="title-font text-3xl font-semibold tracking-tighter">BEST16</span>
+            </div>
+            <div class="flex items-center gap-x-8 text-sm">
+                <a href="#catalogo" class="hover:text-sky-400 transition-colors">Catálogo</a>
+                <a href="#reseñas" class="hover:text-sky-400 transition-colors">Reseñas</a>
+                <div onclick="showAdminLogin()" class="cursor-pointer flex items-center gap-x-2 text-xs px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 rounded-2xl">
+                    <i class="fa-solid fa-lock"></i>
+                    <span>Admin</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <header class="pt-24 pb-16 bg-gradient-to-b from-black via-zinc-950 to-black">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-col lg:flex-row gap-12 items-center">
+                <div class="lg:w-3/5">
+                    <div class="inline-flex items-center gap-x-2 bg-zinc-900 border border-zinc-700 text-sky-400 text-sm px-5 py-2 rounded-3xl mb-6">
+                        <span class="text-amber-400">★</span>
+                        Página certificada ✅
+                    </div>
+                    <h1 class="title-font text-6xl lg:text-7xl font-bold leading-none tracking-tighter mb-6">
+                        Lo que <span class="text-sky-400">uso</span>,<br>lo que recomiendo
+                    </h1>
+                    <p class="text-xl text-zinc-400 max-w-md">Productos premium que realmente uso. Código <span class="text-sky-400 font-semibold">BEST16</span> para descuento.</p>
+                </div>
+
+                <div class="lg:w-2/5">
+                    <div class="hero-glow bg-zinc-900 border border-sky-500/30 rounded-3xl p-10 text-center">
+                        <div class="text-7xl font-bold title-font tracking-tighter mb-3 text-white">BEST16</div>
+                        <p class="text-emerald-400 mb-8">16% OFF • Código activo</p>
+                        <button onclick="copyCode()" id="copy-btn"
+                                class="w-full bg-white hover:bg-sky-400 text-black font-semibold py-5 rounded-2xl transition-all">COPIAR CÓDIGO</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="max-w-2xl mx-auto mt-16">
+                <div class="relative">
+                    <input id="search-input" type="text" placeholder="Buscar productos..." 
+                           onkeyup="filterProducts()"
+                           class="w-full bg-zinc-900 border border-zinc-700 focus:border-sky-400 rounded-3xl py-6 pl-14 pr-6 text-lg outline-none">
+                    <div class="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-500">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- CATALOGO -->
+    <section id="catalogo" class="py-20">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex justify-between items-end mb-10">
+                <h2 class="title-font text-5xl font-semibold">Catálogo</h2>
+                <div id="category-filters" class="flex gap-3 flex-wrap"></div>
+            </div>
+
+            <div id="products-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8"></div>
+            <div id="no-results" class="hidden text-center py-20 text-zinc-400">
+                No se encontraron productos. Prueba otra búsqueda.
+            </div>
+        </div>
+    </section>
+
+    <!-- REVIEWS -->
+    <section id="reseñas" class="py-20 bg-zinc-950">
+        <div class="max-w-7xl mx-auto px-6">
+            <h2 class="title-font text-5xl font-semibold mb-4">Lo que dicen nuestros clientes</h2>
+            <div id="reviews-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-black border-t border-zinc-800 py-16">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between">
+                <div>
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-9 h-9 bg-sky-400 rounded-2xl flex items-center justify-center text-black font-bold text-2xl">B</div>
+                        <span class="title-font text-3xl font-bold">BEST16</span>
+                    </div>
+                    <p class="text-zinc-500 max-w-xs">Enlaces de afiliado. Gracias por apoyar.</p>
+                </div>
+                <div class="mt-10 md:mt-0">
+                    <div class="text-sky-400 text-2xl mb-2">BEST16</div>
+                    <div class="flex gap-6 text-3xl">
+                        <a href="https://t.me/linksbest16" target="_blank"><i class="fa-brands fa-telegram"></i></a>
+                        <a href="https://tiktok.com/@best16links" target="_blank"><i class="fa-brands fa-tiktok"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center text-xs text-zinc-600 mt-16">© 2026 BEST16</div>
+        </div>
+    </footer>
+
+    <!-- ADMIN LOGIN -->
+    <div id="admin-login" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50">
+        <div class="bg-zinc-900 p-10 rounded-3xl w-full max-w-md">
+            <h3 class="text-2xl mb-6">Panel Admin</h3>
+            <input id="password" type="password" placeholder="Contraseña" class="w-full px-6 py-4 bg-zinc-800 rounded-2xl mb-4 outline-none border border-transparent focus:border-red-500">
+            <button onclick="loginAdmin()" class="w-full py-4 bg-white text-black rounded-2xl font-medium">Entrar</button>
+            <button onclick="hideLogin()" class="w-full mt-3 text-zinc-400">Cancelar</button>
+            <p id="error-msg" class="text-red-500 mt-4 hidden">Contraseña incorrecta</p>
+        </div>
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div id="admin-panel" class="hidden fixed inset-0 bg-black/90 z-[60] flex items-center justify-center overflow-auto">
+        <div class="bg-zinc-900 w-full max-w-6xl mx-4 rounded-3xl my-8">
+            <div class="flex border-b border-zinc-700">
+                <button onclick="switchTab(0)" id="tab0" class="flex-1 py-6 text-lg font-medium border-b-2 border-sky-400">Productos</button>
+                <button onclick="switchTab(1)" id="tab1" class="flex-1 py-6 text-lg font-medium text-zinc-400">Reseñas</button>
+                <button onclick="closeAdmin()" class="px-8 text-3xl text-zinc-400">×</button>
+            </div>
+            
+            <div id="admin-content" class="p-8"></div>
+        </div>
+    </div>
+
+    <script>
+        // Data will be loaded from JSON
+        let products = [];
+        let reviews = [];
+        let currentCategory = "Todos";
+
+        async function loadData() {
+            try {
+                const pRes = await fetch('data/products.json');
+                products = await pRes.json();
+            } catch(e) {
+                console.error("No se pudo cargar products.json, usando defaults");
+                products = [];
+            }
+            
+            try {
+                const rRes = await fetch('data/reviews.json');
+                reviews = await rRes.json();
+            } catch(e) {
+                reviews = [];
+            }
+            
+            renderAll();
+        }
+
+        function renderAll() {
+            renderFilters();
+            renderProducts();
+            renderReviews();
+        }
+
+        function renderFilters() {
+            const cats = ["Todos", "Ropa", "Calzado", "Accesorios", "Hogar"];
+            let html = '';
+            cats.forEach(cat => {
+                html += `<button onclick="setCategory('${cat}')" class="px-6 py-3 rounded-3xl text-sm ${currentCategory === cat ? 'bg-white text-black' : 'border border-zinc-700 hover:bg-zinc-800'}">${cat}</button>`;
+            });
+            document.getElementById('category-filters').innerHTML = html;
+        }
+
+        function setCategory(cat) {
+            currentCategory = cat;
+            renderFilters();
+            renderProducts();
+        }
+
+        function filterProducts() {
+            renderProducts();
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('products-grid');
+            const search = document.getElementById('search-input').value.toLowerCase();
+            let filtered = products;
+
+            if (currentCategory !== "Todos") {
+                filtered = filtered.filter(p => p.category === currentCategory);
+            }
+            if (search) {
+                filtered = filtered.filter(p => 
+                    p.name.toLowerCase().includes(search) || 
+                    (p.desc && p.desc.toLowerCase().includes(search))
+                );
+            }
+
+            if (filtered.length === 0) {
+                document.getElementById('no-results').classList.remove('hidden');
+                grid.innerHTML = '';
+                return;
+            }
+
+            document.getElementById('no-results').classList.add('hidden');
+
+            let html = '';
+            filtered.forEach(product => {
+                html += `
+                    <div class="product-card bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden">
+                        <div class="h-72 bg-zinc-950 relative">
+                            <img src="${product.img}" class="w-full h-full object-cover" onerror="this.src='https://picsum.photos/id/1015/400/500'">
+                        </div>
+                        <div class="p-6">
+                            <div class="font-semibold mb-1">${product.name}</div>
+                            <div class="text-sm text-zinc-400 line-clamp-2 mb-4">${product.desc || ''}</div>
+                            <div class="flex justify-between items-center">
+                                <div class="text-2xl font-bold">${product.price}€</div>
+                                <a href="${product.link}" target="_blank" class="bg-sky-400 text-black px-6 py-3 rounded-2xl text-sm font-medium">Ver en Hacoo</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            grid.innerHTML = html;
+        }
+
+        function renderReviews() {
+            const container = document.getElementById('reviews-grid');
+            let html = '';
+            reviews.forEach(r => {
+                let stars = '★'.repeat(r.stars) + '☆'.repeat(5 - r.stars);
+                html += `
+                    <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-8">
+                        <div class="flex gap-4 mb-6">
+                            <div class="w-11 h-11 bg-zinc-700 rounded-2xl flex items-center justify-center text-xl font-bold">${r.name.charAt(0)}</div>
+                            <div>
+                                <div>${r.name}</div>
+                                <div class="text-amber-400">${stars}</div>
+                            </div>
+                        </div>
+                        <p class="italic text-zinc-300">"${r.comment}"</p>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function copyCode() {
+            navigator.clipboard.writeText("BEST16");
+            const btn = document.getElementById('copy-btn');
+            const orig = btn.textContent;
+            btn.textContent = "¡COPIADO!";
+            btn.style.backgroundColor = '#10b981';
+            setTimeout(() => {
+                btn.textContent = orig;
+                btn.style.backgroundColor = '';
+            }, 1800);
+        }
+
+        // Admin
+        function showAdminLogin() {
+            document.getElementById('admin-login').classList.remove('hidden');
+            document.getElementById('password').focus();
+        }
+
+        function hideLogin() {
+            document.getElementById('admin-login').classList.add('hidden');
+            document.getElementById('error-msg').classList.add('hidden');
+        }
+
+        function loginAdmin() {
+            if (document.getElementById('password').value === "David14") {
+                hideLogin();
+                document.getElementById('admin-panel').classList.remove('hidden');
+                switchTab(0);
+            } else {
+                document.getElementById('error-msg').classList.remove('hidden');
+            }
+        }
+
+        function closeAdmin() {
+            document.getElementById('admin-panel').classList.add('hidden');
+        }
+
+        let currentAdminTab = 0;
+
+        function switchTab(tab) {
+            currentAdminTab = tab;
+            document.getElementById('tab0').classList.toggle('border-b-2', tab === 0);
+            document.getElementById('tab0').classList.toggle('border-sky-400', tab === 0);
+            document.getElementById('tab0').classList.toggle('text-zinc-400', tab !== 0);
+            
+            document.getElementById('tab1').classList.toggle('border-b-2', tab === 1);
+            document.getElementById('tab1').classList.toggle('border-sky-400', tab === 1);
+            document.getElementById('tab1').classList.toggle('text-zinc-400', tab !== 1);
+
+            const content = document.getElementById('admin-content');
+            
+            if (tab === 0) {
+                let formHTML = `
+                    <h3 class="text-2xl font-semibold mb-8">Añadir Producto</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <input id="prod-name" placeholder="Nombre" class="w-full bg-zinc-800 px-5 py-4 rounded-2xl mb-4">
+                            <textarea id="prod-desc" placeholder="Descripción" rows="3" class="w-full bg-zinc-800 px-5 py-4 rounded-2xl mb-4"></textarea>
+                            <input id="prod-price" type="number" step="0.01" placeholder="Precio" class="w-full bg-zinc-800 px-5 py-4 rounded-2xl mb-4">
+                            <select id="prod-cat" class="w-full bg-zinc-800 px-5 py-4 rounded-2xl mb-4">
+                                <option>Ropa</option><option>Calzado</option><option>Accesorios</option><option>Hogar</option>
+                            </select>
+                        </div>
+                        <div>
+                            <input id="prod-img" placeholder="URL Imagen" class="w-full bg-zinc-800 px-5 py-4 rounded-2xl mb-4">
+                            <input id="prod-link" placeholder="Link Afiliado" class="w-full bg-zinc-800 px-5 py-4 rounded-2xl mb-8">
+                            <button onclick="addNewProduct()" class="w-full bg-sky-400 text-black py-5 rounded-2xl font-semibold">Añadir Producto</button>
+                        </div>
+                    </div>
+                    <div class="mt-12">
+                        <h4 class="font-medium mb-4">Productos actuales</h4>
+                        <div id="prod-list" class="space-y-3"></div>
+                    </div>
+                `;
+                content.innerHTML = formHTML;
+                renderAdminProductList();
+            } else {
+                let formHTML = `
+                    <h3 class="text-2xl font-semibold mb-8">Añadir Reseña</h3>
+                    <input id="rev-name" placeholder="Nombre" class="w-full bg-zinc-800 px-5 py-4 rounded-2xl mb-4">
+                    <select id="rev-stars" class="w-full bg-zinc-800 px-5 py-4 rounded-2xl mb-4">
+                        <option value="5">5 Estrellas</option>
+                        <option value="4">4 Estrellas</option>
+                        <option value="3">3 Estrellas</option>
+                    </select>
+                    <textarea id="rev-comment" placeholder="Comentario" rows="4" class="w-full bg-zinc-800 px-5 py-4 rounded-2xl mb-6"></textarea>
+                    <button onclick="addNewReview()" class="w-full bg-sky-400 text-black py-5 rounded-2xl font-semibold">Añadir Reseña</button>
+                    
+                    <div class="mt-12">
+                        <h4 class="font-medium mb-4">Reseñas actuales</h4>
+                        <div id="rev-list" class="space-y-4"></div>
+                    </div>
+                `;
+                content.innerHTML = formHTML;
+                renderAdminReviewList();
+            }
+        }
+
+        function renderAdminProductList() {
+            const container = document.getElementById('prod-list');
+            let html = '';
+            products.forEach((p, i) => {
+                html += `
+                    <div class="flex justify-between items-center bg-zinc-800 p-4 rounded-2xl">
+                        <div>
+                            <div class="font-medium">${p.name}</div>
+                            <div class="text-xs text-zinc-500">${p.category} - ${p.price}€</div>
+                        </div>
+                        <button onclick="deleteProduct(${i})" class="text-red-400">Eliminar</button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function addNewProduct() {
+            const name = document.getElementById('prod-name').value;
+            if (!name) return alert("Nombre requerido");
+            
+            const newP = {
+                id: Date.now(),
+                name: name,
+                desc: document.getElementById('prod-desc').value,
+                category: document.getElementById('prod-cat').value,
+                price: parseFloat(document.getElementById('prod-price').value) || 10,
+                img: document.getElementById('prod-img').value || "https://picsum.photos/id/20/400/500",
+                link: document.getElementById('prod-link').value || "#"
+            };
+            
+            products.unshift(newP);
+            renderProducts();
+            renderAdminProductList();
+            
+            // Clear fields
+            document.getElementById('prod-name').value = '';
+            document.getElementById('prod-desc').value = '';
+            document.getElementById('prod-price').value = '';
+            document.getElementById('prod-img').value = '';
+            document.getElementById('prod-link').value = '';
+        }
+
+        function deleteProduct(i) {
+            if (confirm("Eliminar producto?")) {
+                products.splice(i, 1);
+                renderProducts();
+                renderAdminProductList();
+            }
+        }
+
+        function renderAdminReviewList() {
+            const container = document.getElementById('rev-list');
+            let html = '';
+            reviews.forEach((r, i) => {
+                html += `
+                    <div class="bg-zinc-800 p-5 rounded-2xl">
+                        <div class="flex justify-between">
+                            <span>${r.name} (${r.stars}★)</span>
+                            <button onclick="deleteReview(${i})" class="text-red-400">Eliminar</button>
+                        </div>
+                        <p class="mt-2">"${r.comment}"</p>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function addNewReview() {
+            const name = document.getElementById('rev-name').value;
+            if (!name) return alert("Nombre requerido");
+            
+            const newR = {
+                id: Date.now(),
+                name: name,
+                stars: parseInt(document.getElementById('rev-stars').value),
+                comment: document.getElementById('rev-comment').value
+            };
+            
+            reviews.unshift(newR);
+            renderReviews();
+            renderAdminReviewList();
+            
+            document.getElementById('rev-name').value = '';
+            document.getElementById('rev-comment').value = '';
+        }
+
+        function deleteReview(i) {
+            if (confirm("Eliminar reseña?")) {
+                reviews.splice(i, 1);
+                renderReviews();
+                renderAdminReviewList();
+            }
+        }
+
+        // Export functions (download updated JSON)
+        function exportProducts() {
+            const dataStr = JSON.stringify(products, null, 2);
+            const blob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'products.json';
+            a.click();
+        }
+
+        function exportReviews() {
+            const dataStr = JSON.stringify(reviews, null, 2);
+            const blob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'reviews.json';
+            a.click();
+        }
+
+        window.onload = () => {
+            loadData();
+            
+            // Add export buttons in admin if needed
+            setTimeout(() => {
+                lucide.createIcons();
+            }, 100);
+        };
+    </script>
+</body>
+</html>
