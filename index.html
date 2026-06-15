@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BEST16 - Lo que uso, lo que recomiendo</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -171,8 +172,15 @@
         </div>
     </div>
 
-    <script>
-        // Data will be loaded from JSON
+        <script>
+        // ================== SUPABASE CONFIG ==================
+        const SUPABASE_URL = 'https://sbtyihqwnxdvsainchjb.supabase.co';        // ← TU URL
+        const SUPABASE_ANON_KEY = 'sb_publishable_j27q-Esy0EjN_G-Xq53BeA_gKwFZc3L';                 // ← TU ANON KEY
+        
+        const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // ====================================================
+            
+            // Data will be loaded from JSON
         let products = [];
         let reviews = [];
         let currentCategory = "Todos";
