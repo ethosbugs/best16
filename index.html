@@ -167,6 +167,7 @@
         const SUPABASE_URL = 'https://sbtyihqwnxdvsainchjb.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_j27q-Esy0EjN_G-Xq53BeA_gKwFZc3L'; 
         
+        // Inicialización única de Supabase
         const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         // ====================================================
             
@@ -176,19 +177,19 @@
 
         async function loadData() {
             try {
-                // Obtener productos desde Supabase ordenados por ID descendente (los más nuevos primero)
+                // Consultas protegidas a la base de datos
                 const { data: pData, error: pError } = await supabase.from('products').select('*').order('id', { ascending: false });
-                if (pError) throw pError;
+                if (pError) console.warn("Aviso productos:", pError.message);
                 products = pData || [];
 
-                // Obtener reseñas desde Supabase ordenadas por ID descendente
                 const { data: rData, error: rError } = await supabase.from('reviews').select('*').order('id', { ascending: false });
-                if (rError) throw rError;
+                if (rError) console.warn("Aviso reseñas:", rError.message);
                 reviews = rData || [];
             } catch(e) {
-                console.error("Error al cargar los datos de Supabase:", e);
+                console.error("Error al conectar con Supabase:", e);
             }
             
+            // Renderizar siempre, incluso si falla la base de datos para que los botones no se congelen
             renderAll();
         }
 
@@ -294,7 +295,7 @@
             }, 1800);
         }
 
-        // Admin
+        // Admin Actions
         function showAdminLogin() {
             document.getElementById('admin-login').classList.remove('hidden');
             document.getElementById('password').focus();
@@ -411,23 +412,20 @@
             };
             
             try {
-                // Insertar en la tabla de Supabase
                 const { data, error } = await supabase.from('products').insert([newP]).select();
                 if (error) throw error;
                 
-                // Actualizar array en local y renderizar
                 products.unshift(data[0]);
                 renderProducts();
                 renderAdminProductList();
                 
-                // Limpiar campos
                 document.getElementById('prod-name').value = '';
                 document.getElementById('prod-desc').value = '';
                 document.getElementById('prod-price').value = '';
                 document.getElementById('prod-img').value = '';
                 document.getElementById('prod-link').value = '';
             } catch (e) {
-                alert("Error al guardar el producto en Supabase");
+                alert("Error al guardar el producto");
                 console.error(e);
             }
         }
