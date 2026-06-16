@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/dist/umd/supabase.js"></script>
     <style>
         body { font-family: 'Inter', system-ui, sans-serif; }
         .title-font { font-family: 'Space Grotesk', sans-serif; }
@@ -122,48 +123,54 @@
         </div>
     </div>
 
-    <script type="module">
-        import { createClient } from 'https://unpkg.com/@supabase/supabase-js@2 font-sans?module'
-
-        // Tus credenciales actualizadas y corregidas
-        const SUPABASE_URL = 'https://sbtyihqwnxdvsainchjb.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_j27q-Esy0EjN_G-Xq53BeA_GkWFZc3L'; 
-        
-        window.supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        // Ejecutamos la carga de datos inmediatamente tras conectar con la base de datos
-        window.loadData();
-    </script>
-
     <script>
-        // ================== VARIABLES GLOBALES ==================
+        // ================== CREDENCIALES Y VARIABLES GLOBALES ==================
+        const SUPABASE_URL = 'https://sbtyihqwnxdvsainchjb.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_j27q-Esy0EjN_G-Xq53BeA_gkWFZc3L'; 
+        
+        let supabaseClient = null;
         let products = [];
         let reviews = [];
         let currentCategory = "Todos";
 
+        // ================== CONEXIÓN A LA BASE DE DATOS ==================
+        function initSupabase() {
+            try {
+                if (typeof supabase !== 'undefined' && supabase.createClient) {
+                    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    return true;
+                } else if (typeof Supabase !== 'undefined' && Supabase.createClient) {
+                    supabaseClient = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    return true;
+                }
+            } catch (err) {
+                console.error("Error al instanciar el cliente de Supabase:", err);
+            }
+            return false;
+        }
+
         async function loadData() {
-            if (!window.supabaseClient) {
-                // Si el módulo tarda un instante, reintentamos pacientemente
-                setTimeout(loadData, 100);
+            // Comprobamos la disponibilidad de la librería global
+            if (!supabaseClient && !initSupabase()) {
+                console.warn("Esperando que la librería Supabase se cargue en el navegador...");
+                setTimeout(loadData, 300);
                 return;
             }
 
             try {
-                const { data: pData, error: pError } = await window.supabaseClient.from('products').select('*').order('id', { ascending: false });
-                const { data: rData, error: rError } = await window.supabaseClient.from('reviews').select('*').order('id', { ascending: false });
+                const { data: pData, error: pError } = await supabaseClient.from('products').select('*').order('id', { ascending: false });
+                const { data: rData, error: rError } = await supabaseClient.from('reviews').select('*').order('id', { ascending: false });
                 
-                if (pError) console.error("Error productos:", pError);
-                if (rError) console.error("Error reseñas:", rError);
+                if (pError) console.error("Error cargando productos:", pError);
+                if (rError) console.error("Error cargando reseñas:", rError);
 
                 products = pData || [];
                 reviews = rData || [];
             } catch(e) {
-                console.error("Error crítico en comunicación de datos:", e);
+                console.error("Error crítico de red en consulta:", e);
             }
             renderAll();
         }
-
-        window.loadData = loadData;
 
         function renderAll() {
             renderFilters();
@@ -265,18 +272,16 @@
             setTimeout(() => { btn.textContent = orig; btn.style.backgroundColor = ''; }, 1800);
         }
 
-        // ================== CONTROL PANEL ADMIN ==================
+        // ================== LOGICA PANEL DE ADMINISTRACIÓN ==================
         function showAdminLogin() {
             document.getElementById('admin-login').classList.remove('hidden');
             document.getElementById('password').focus();
         }
-        window.showAdminLogin = showAdminLogin;
 
         function hideLogin() {
             document.getElementById('admin-login').classList.add('hidden');
             document.getElementById('error-msg').classList.add('hidden');
         }
-        window.hideLogin = hideLogin;
 
         function loginAdmin() {
             if (document.getElementById('password').value === "David14") {
@@ -287,12 +292,10 @@
                 document.getElementById('error-msg').classList.remove('hidden');
             }
         }
-        window.loginAdmin = loginAdmin;
 
         function closeAdmin() { 
             document.getElementById('admin-panel').classList.add('hidden'); 
         }
-        window.closeAdmin = closeAdmin;
 
         function switchTab(tab) {
             const tab0 = document.getElementById('tab0');
@@ -341,7 +344,6 @@
                 renderAdminReviewList();
             }
         }
-        window.switchTab = switchTab;
 
         function renderAdminProductList() {
             const container = document.getElementById('prod-list');
@@ -354,46 +356,39 @@
         }
 
         async function addNewProduct() {
-            if (!window.supabaseClient) return alert("Supabase aún no está listo.");
+            if (!supabaseClient) return alert("Conexión con base de datos no establecida.");
             const name = document.getElementById('prod-name').value.trim();
-            if (!name) return alert("Nombre requerido");
+            if (!name) return alert("Por favor, ingresa un nombre válido.");
 
             const newP = {
                 name: name,
                 desc: document.getElementById('prod-desc').value.trim(),
                 category: document.getElementById('prod-cat').value,
-                price: parseFloat(document.getElementById('prod-price').value) || 10,
+                price: parseFloat(document.getElementById('prod-price').value) || 0,
                 img: document.getElementById('prod-img').value || "https://picsum.photos/id/20/400/500",
                 link: document.getElementById('prod-link').value || "#"
             };
 
             try {
-                const { data, error } = await window.supabaseClient.from('products').insert([newP]).select();
-                if (error) {
-                    alert("Error Supabase: " + error.message);
-                    return;
-                }
+                const { data, error } = await supabaseClient.from('products').insert([newP]).select();
+                if (error) return alert("Error al insertar en la base de datos: " + error.message);
                 products.unshift(data[0]);
                 renderProducts();
                 renderAdminProductList();
-                alert("✅ ¡Producto subido con éxito!");
-            } catch (e) {
-                alert("Error inesperado: " + e.message);
-            }
+                alert("✅ ¡Producto guardado con éxito!");
+            } catch (e) { alert("Error: " + e.message); }
         }
-        window.addNewProduct = addNewProduct;
 
         async function deleteProduct(id) {
-            if (!window.supabaseClient) return;
-            if (confirm("¿Eliminar producto?")) {
-                const { error } = await window.supabaseClient.from('products').delete().eq('id', id);
-                if (error) return alert("Error al eliminar");
+            if (!supabaseClient) return;
+            if (confirm("¿Estás seguro de que deseas eliminar este producto?")) {
+                const { error } = await supabaseClient.from('products').delete().eq('id', id);
+                if (error) return alert("Error al eliminar el producto");
                 products = products.filter(p => p.id != id);
                 renderProducts();
                 renderAdminProductList();
             }
         }
-        window.deleteProduct = deleteProduct;
 
         function renderAdminReviewList() {
             const container = document.getElementById('rev-list');
@@ -402,43 +397,42 @@
             reviews.forEach((r) => {
                 html += `<div class="bg-zinc-800 p-5 rounded-2xl"><div class="flex justify-between"><span class="font-medium">${r.name} (${r.stars}★)</span><button onclick="deleteReview('${r.id}')" class="text-red-400 hover:text-red-300">Eliminar</button></div><p class="mt-2 text-zinc-400">"${r.comment}"</p></div>`;
             });
-            container.innerHTML = html || '<p class="text-zinc-500">No hay reseñas.</p>';
+            container.innerHTML = html || '<p class="text-zinc-500">No hay reseñas registradas.</p>';
         }
 
         async function addNewReview() {
-            if (!window.supabaseClient) return alert("Supabase aún no está listo.");
+            if (!supabaseClient) return alert("Base de datos no disponible.");
             const name = document.getElementById('rev-name').value.trim();
-            if (!name) return alert("Nombre requerido");
+            if (!name) return alert("El nombre es requerido.");
             const newR = {
                 name: name,
                 stars: parseInt(document.getElementById('rev-stars').value),
                 comment: document.getElementById('rev-comment').value.trim()
             };
             try {
-                const { data, error } = await window.supabaseClient.from('reviews').insert([newR]).select();
+                const { data, error } = await supabaseClient.from('reviews').insert([newR]).select();
                 if (error) return alert("Error: " + error.message);
                 reviews.unshift(data[0]);
                 renderReviews();
                 renderAdminReviewList();
-                alert("✅ Reseña guardada correctamente");
-            } catch (e) { alert("Error al guardar"); }
+                alert("✅ ¡Reseña añadida!");
+            } catch (e) { alert("Error al enviar la reseña"); }
         }
-        window.addNewReview = addNewReview;
 
         async function deleteReview(id) {
-            if (!window.supabaseClient) return;
-            if (confirm("¿Eliminar reseña?")) {
-                const { error } = await window.supabaseClient.from('reviews').delete().eq('id', id);
-                if (error) return alert("Error al eliminar");
+            if (!supabaseClient) return;
+            if (confirm("¿Eliminar de forma permanente esta reseña?")) {
+                const { error } = await supabaseClient.from('reviews').delete().eq('id', id);
+                if (error) return alert("Error al eliminar la reseña");
                 reviews = reviews.filter(r => r.id != id);
                 renderReviews();
                 renderAdminReviewList();
             }
         }
-        window.deleteReview = deleteReview;
 
+        // Ejecución inmediata al cargar el DOM de la página
         document.addEventListener("DOMContentLoaded", () => {
-            renderFilters();
+            loadData();
         });
     </script>
 </body>
