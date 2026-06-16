@@ -99,7 +99,7 @@
                 </div>
             </div>
         </div>
-    </footer >
+    </footer>
 
     <div id="admin-login" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50">
         <div class="bg-zinc-900 p-10 rounded-3xl w-full max-w-md">
@@ -123,15 +123,15 @@
     </div>
 
     <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+        import { createClient } from 'https://unpkg.com/@supabase/supabase-js@2 font-sans?module'
 
+        // Tus credenciales actualizadas y corregidas
         const SUPABASE_URL = 'https://sbtyihqwnxdvsainchjb.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_j27q-Esy0EjN_G-Xq53BeA_gKwFZc3L'; 
+        const SUPABASE_ANON_KEY = 'sb_publishable_j27q-Esy0EjN_G-Xq53BeA_GkWFZc3L'; 
         
-        // Inicialización directa e inmune a fallos de CDN clásico
         window.supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        // Cargamos los datos iniciales
+        // Ejecutamos la carga de datos inmediatamente tras conectar con la base de datos
         window.loadData();
     </script>
 
@@ -143,8 +143,8 @@
 
         async function loadData() {
             if (!window.supabaseClient) {
-                // Pequeña espera por si el módulo tarda un milisegundo extra
-                setTimeout(loadData, 200);
+                // Si el módulo tarda un instante, reintentamos pacientemente
+                setTimeout(loadData, 100);
                 return;
             }
 
@@ -158,12 +158,11 @@
                 products = pData || [];
                 reviews = rData || [];
             } catch(e) {
-                console.error("Error crítico en conexión:", e);
+                console.error("Error crítico en comunicación de datos:", e);
             }
             renderAll();
         }
 
-        // Hacemos la función accesible globalmente
         window.loadData = loadData;
 
         function renderAll() {
@@ -355,7 +354,7 @@
         }
 
         async function addNewProduct() {
-            if (!window.supabaseClient) return alert("Supabase aún no está listo. Espera un segundo.");
+            if (!window.supabaseClient) return alert("Supabase aún no está listo.");
             const name = document.getElementById('prod-name').value.trim();
             if (!name) return alert("Nombre requerido");
 
@@ -377,7 +376,7 @@
                 products.unshift(data[0]);
                 renderProducts();
                 renderAdminProductList();
-                alert("✅ Producto añadido correctamente");
+                alert("✅ ¡Producto subido con éxito!");
             } catch (e) {
                 alert("Error inesperado: " + e.message);
             }
@@ -438,7 +437,6 @@
         }
         window.deleteReview = deleteReview;
 
-        // Carga inicial pasiva
         document.addEventListener("DOMContentLoaded", () => {
             renderFilters();
         });
