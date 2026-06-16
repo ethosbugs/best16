@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: 'Inter', system-ui, sans-serif; }
         .title-font { font-family: 'Space Grotesk', sans-serif; }
@@ -124,29 +124,44 @@
     </div>
 
     <script>
-        // ================== INITIALIZATION ==================
+        // ================== VARIABLES GLOBALES (Al principio) ==================
         const SUPABASE_URL = 'https://sbtyihqwnxdvsainchjb.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNidHlpaHF3bnhkdnNhaW5jaGpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjg5MjM0NTYsImV4cCI6MjA0NDQ5OTQ1Nn0.7X9z3fKz8vL9pQ2mN5bX8vL9pQ2mN5bX8vL9pQ2mN'; 
         
-        const supabaseClient = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+        let supabaseClient = null;
         let products = [];
         let reviews = [];
         let currentCategory = "Todos";
 
-        // ================== DATA LOADING ==================
+        // ================== INICIALIZACIÓN SEGURA ==================
+        function initSupabase() {
+            if (typeof Supabase !== 'undefined') {
+                supabaseClient = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                return true;
+            } else {
+                console.error("❌ Error: La librería global de Supabase no está lista en el navegador.");
+                return false;
+            }
+        }
+
         async function loadData() {
+            // Validamos que Supabase esté cargado antes de hacer peticiones
+            if (!supabaseClient && !initSupabase()) {
+                console.error("No se pudo iniciar Supabase. Reintentando...");
+                return;
+            }
+
             try {
                 const { data: pData, error: pError } = await supabaseClient.from('products').select('*').order('id', { ascending: false });
                 const { data: rData, error: rError } = await supabaseClient.from('reviews').select('*').order('id', { ascending: false });
                 
-                if (pError) console.error("Error productos:", pError);
-                if (rError) console.error("Error reseñas:", rError);
+                if (pError) console.error("Error cargando productos de la BD:", pError);
+                if (rError) console.error("Error cargando reseñas de la BD:", rError);
 
                 products = pData || [];
                 reviews = rData || [];
             } catch(e) {
-                console.error("Error crítico cargando datos:", e);
+                console.error("Error crítico en la conexión:", e);
             }
             renderAll();
         }
@@ -157,7 +172,7 @@
             renderReviews();
         }
 
-        // ================== RENDER LOGIC ==================
+        // ================== LOGICA DE RENDERIZADO DOM ==================
         function renderFilters() {
             const cats = ["Todos", "Ropa", "Calzado", "Accesorios", "Hogar"];
             let html = '';
@@ -251,7 +266,7 @@
             setTimeout(() => { btn.textContent = orig; btn.style.backgroundColor = ''; }, 1800);
         }
 
-        // ================== ADMIN ACTIONS ==================
+        // ================== CONTROL PANEL ADMIN ==================
         function showAdminLogin() {
             document.getElementById('admin-login').classList.remove('hidden');
             document.getElementById('password').focus();
@@ -335,6 +350,7 @@
         }
 
         async function addNewProduct() {
+            if (!supabaseClient) return alert("Supabase no está listo.");
             const name = document.getElementById('prod-name').value.trim();
             if (!name) return alert("Nombre requerido");
 
@@ -363,6 +379,7 @@
         }
 
         async function deleteProduct(id) {
+            if (!supabaseClient) return;
             if (confirm("¿Eliminar producto?")) {
                 const { error } = await supabaseClient.from('products').delete().eq('id', id);
                 if (error) return alert("Error al eliminar");
@@ -383,6 +400,7 @@
         }
 
         async function addNewReview() {
+            if (!supabaseClient) return alert("Supabase no está listo.");
             const name = document.getElementById('rev-name').value.trim();
             if (!name) return alert("Nombre requerido");
             const newR = {
@@ -401,6 +419,7 @@
         }
 
         async function deleteReview(id) {
+            if (!supabaseClient) return;
             if (confirm("¿Eliminar reseña?")) {
                 const { error } = await supabaseClient.from('reviews').delete().eq('id', id);
                 if (error) return alert("Error al eliminar");
@@ -410,8 +429,9 @@
             }
         }
 
-        // Evento seguro para iniciar la aplicación una vez cargado todo el DOM
+        // Ejecución segura del ciclo de vida al cargar la página
         document.addEventListener("DOMContentLoaded", () => {
+            initSupabase();
             loadData();
         });
     </script>
