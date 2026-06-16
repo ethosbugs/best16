@@ -36,7 +36,7 @@
         </div>
     </nav>
 
-    <!-- Hero, Catálogo, Reseñas y Footer (igual que antes) -->
+    <!-- Hero -->
     <header class="pt-24 pb-16 bg-gradient-to-b from-black via-zinc-950 to-black">
         <div class="max-w-7xl mx-auto px-6">
             <div class="flex flex-col lg:flex-row gap-12 items-center">
@@ -128,12 +128,12 @@
     </div>
 
     <script>
-        // ================== SUPABASE ==================
+        // ================== SUPABASE (al principio) ==================
         const SUPABASE_URL = 'https://sbtyihqwnxdvsainchjb.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNidHlpaHF3bnhkdnNhaW5jaGpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjg5MjM0NTYsImV4cCI6MjA0NDQ5OTQ1Nn0.7X9z3fKz8vL9pQ2mN5bX8vL9pQ2mN5bX8vL9pQ2mN'; 
         
         const supabaseClient = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        // =============================================
+        // ============================================================
 
         let products = [];
         let reviews = [];
@@ -332,7 +332,7 @@
             try {
                 const { data, error } = await supabaseClient.from('products').insert([newP]).select();
                 if (error) {
-                    alert("Error de Supabase: " + error.message);
+                    alert("Error Supabase: " + error.message);
                     console.error(error);
                     return;
                 }
