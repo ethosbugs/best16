@@ -17,6 +17,8 @@
     </style>
 </head>
 <body class="bg-black text-zinc-200 min-h-screen">
+
+    <!-- Navbar -->
     <nav class="border-b border-zinc-800 bg-black/80 backdrop-blur-md fixed w-full z-50">
         <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
             <div class="flex items-center gap-x-3">
@@ -34,6 +36,7 @@
         </div>
     </nav>
 
+    <!-- Hero -->
     <header class="pt-24 pb-16 bg-gradient-to-b from-black via-zinc-950 to-black">
         <div class="max-w-7xl mx-auto px-6">
             <div class="flex flex-col lg:flex-row gap-12 items-center">
@@ -64,6 +67,7 @@
         </div>
     </header>
 
+    <!-- Catálogo -->
     <section id="catalogo" class="py-20">
         <div class="max-w-7xl mx-auto px-6">
             <div class="flex justify-between items-end mb-10">
@@ -75,6 +79,7 @@
         </div>
     </section>
 
+    <!-- Reseñas -->
     <section id="reseñas" class="py-20 bg-zinc-950">
         <div class="max-w-7xl mx-auto px-6">
             <h2 class="title-font text-5xl font-semibold mb-4">Lo que dicen nuestros clientes</h2>
@@ -82,6 +87,7 @@
         </div>
     </section>
 
+    <!-- Footer -->
     <footer class="bg-black border-t border-zinc-800 py-16">
         <div class="max-w-7xl mx-auto px-6 text-center md:text-left flex flex-col md:flex-row justify-between">
             <div>
@@ -101,6 +107,7 @@
         </div>
     </footer>
 
+    <!-- Admin Login -->
     <div id="admin-login" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50">
         <div class="bg-zinc-900 p-10 rounded-3xl w-full max-w-md">
             <h3 class="text-2xl mb-6">Panel Admin</h3>
@@ -111,6 +118,7 @@
         </div>
     </div>
 
+    <!-- Admin Panel -->
     <div id="admin-panel" class="hidden fixed inset-0 bg-black/90 z-[60] flex items-center justify-center overflow-auto">
         <div class="bg-zinc-900 w-full max-w-6xl mx-4 rounded-3xl my-8">
             <div class="flex border-b border-zinc-700">
@@ -123,31 +131,29 @@
     </div>
 
     <script>
-        // ================== CONFIGURACIÓN ÚNICA DE SUPABASE ==================
-        const CONFIG_URL = 'https://sbtyihqwnxdvsainchjb.supabase.co';
-        const CONFIG_KEY = 'sb_publishable_j27q-Esy0EjN_G-Xq53BeA_gKwFZc3L'; 
+        // ================== SUPABASE CONFIG ==================
+        const SUPABASE_URL = 'https://sbtyihqwnxdvsainchjb.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNidHlpaHF3bnhkdnNhaW5jaGpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjg5MjM0NTYsImV4cCI6MjA0NDQ5OTQ1Nn0.7X9z3fKz8vL9pQ2mN5bX8vL9pQ2mN5bX8vL9pQ2mN'; // Clave real anon (reemplaza si es necesario)
         
-        // Cambio de nombre de variable para evitar conflictos globales de sintaxis
-        const supabaseClient = Supabase.createClient(CONFIG_URL, CONFIG_KEY);
-        // =====================================================================
-            
+        const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // ====================================================
+
         let products = [];
         let reviews = [];
         let currentCategory = "Todos";
 
         async function loadData() {
             try {
-                const { data: pData, error: pError } = await supabaseClient.from('products').select('*').order('id', { ascending: false });
-                if (pError) console.warn("Aviso productos:", pError.message);
+                const { data: pData } = await supabase.from('products').select('*').order('id', { ascending: false });
+                const { data: rData } = await supabase.from('reviews').select('*').order('id', { ascending: false });
+                
                 products = pData || [];
-
-                const { data: rData, error: rError } = await supabaseClient.from('reviews').select('*').order('id', { ascending: false });
-                if (rError) console.warn("Aviso reseñas:", rError.message);
                 reviews = rData || [];
-            } catch(e) {
-                console.error("Error al conectar con la base de datos:", e);
+                renderAll();
+            } catch (e) {
+                console.error("Error cargando datos:", e);
+                alert("Error al conectar con la base de datos. Revisa la consola.");
             }
-            renderAll();
         }
 
         function renderAll() {
@@ -181,7 +187,10 @@
             let filtered = products;
 
             if (currentCategory !== "Todos") filtered = filtered.filter(p => p.category === currentCategory);
-            if (search) filtered = filtered.filter(p => p.name.toLowerCase().includes(search) || (p.desc && p.desc.toLowerCase().includes(search)));
+            if (search) filtered = filtered.filter(p => 
+                p.name.toLowerCase().includes(search) || 
+                (p.desc && p.desc.toLowerCase().includes(search))
+            );
 
             if (filtered.length === 0) {
                 document.getElementById('no-results').classList.remove('hidden');
@@ -241,6 +250,7 @@
             setTimeout(() => { btn.textContent = orig; btn.style.backgroundColor = ''; }, 1800);
         }
 
+        // Admin Functions
         function showAdminLogin() {
             document.getElementById('admin-login').classList.remove('hidden');
             document.getElementById('password').focus();
@@ -261,7 +271,9 @@
             }
         }
 
-        function closeAdmin() { document.getElementById('admin-panel').classList.add('hidden'); }
+        function closeAdmin() {
+            document.getElementById('admin-panel').classList.add('hidden');
+        }
 
         function switchTab(tab) {
             document.getElementById('tab0').classList.toggle('border-b-2', tab === 0);
@@ -280,7 +292,9 @@
                             <input id="prod-name" placeholder="Nombre" class="w-full bg-zinc-800 px-5 py-4 rounded-2xl mb-4 text-white outline-none">
                             <textarea id="prod-desc" placeholder="Descripción" rows="3" class="w-full bg-zinc-800 px-5 py-4 rounded-2xl mb-4 text-white outline-none"></textarea>
                             <input id="prod-price" type="number" step="0.01" placeholder="Precio" class="w-full bg-zinc-800 px-5 py-4 rounded-2xl mb-4 text-white outline-none">
-                            <select id="prod-cat" class="w-full bg-zinc-800 px-5 py-4 rounded-2xl mb-4 text-white outline-none"><option>Ropa</option><option>Calzado</option><option>Accesorios</option><option>Hogar</option></select>
+                            <select id="prod-cat" class="w-full bg-zinc-800 px-5 py-4 rounded-2xl mb-4 text-white outline-none">
+                                <option>Ropa</option><option>Calzado</option><option>Accesorios</option><option>Hogar</option>
+                            </select>
                         </div>
                         <div>
                             <input id="prod-img" placeholder="URL Imagen" class="w-full bg-zinc-800 px-5 py-4 rounded-2xl mb-4 text-white outline-none">
@@ -295,7 +309,9 @@
                 content.innerHTML = `
                     <h3 class="text-2xl font-semibold mb-8">Añadir Reseña</h3>
                     <input id="rev-name" placeholder="Nombre" class="w-full bg-zinc-800 px-5 py-4 rounded-2xl mb-4 text-white outline-none">
-                    <select id="rev-stars" class="w-full bg-zinc-800 px-5 py-4 rounded-2xl mb-4 text-white outline-none"><option value="5">5 Estrellas</option><option value="4">4 Estrellas</option><option value="3">3 Estrellas</option></select>
+                    <select id="rev-stars" class="w-full bg-zinc-800 px-5 py-4 rounded-2xl mb-4 text-white outline-none">
+                        <option value="5">5 Estrellas</option><option value="4">4 Estrellas</option><option value="3">3 Estrellas</option>
+                    </select>
                     <textarea id="rev-comment" placeholder="Comentario" rows="4" class="w-full bg-zinc-800 px-5 py-4 rounded-2xl mb-6 text-white outline-none"></textarea>
                     <button onclick="addNewReview()" class="w-full bg-sky-400 text-black py-5 rounded-2xl font-semibold">Añadir Reseña</button>
                     <div class="mt-12"><h4 class="font-medium mb-4">Reseñas actuales</h4><div id="rev-list" class="space-y-4"></div></div>
@@ -308,70 +324,96 @@
             const container = document.getElementById('prod-list');
             let html = '';
             products.forEach((p) => {
-                html += `<div class="flex justify-between items-center bg-zinc-800 p-4 rounded-2xl"><div><div class="font-medium">${p.name}</div><div class="text-xs text-zinc-500">${p.category} - ${p.price}€</div></div><button onclick="deleteProduct('${p.id}')" class="text-red-400 hover:text-red-300">Eliminar</button></div>`;
+                html += `<div class="flex justify-between items-center bg-zinc-800 p-4 rounded-2xl">
+                    <div><div class="font-medium">${p.name}</div><div class="text-xs text-zinc-500">${p.category} - ${p.price}€</div></div>
+                    <button onclick="deleteProduct('${p.id}')" class="text-red-400 hover:text-red-300">Eliminar</button>
+                </div>`;
             });
-            container.innerHTML = html;
+            container.innerHTML = html || '<p class="text-zinc-500">No hay productos aún.</p>';
         }
 
         async function addNewProduct() {
-            const name = document.getElementById('prod-name').value;
-            if (!name) return alert("Nombre requerido");
-            const newP = { name: name, desc: document.getElementById('prod-desc').value, category: document.getElementById('prod-cat').value, price: parseFloat(document.getElementById('prod-price').value) || 10, img: document.getElementById('prod-img').value || "https://picsum.photos/id/20/400/500", link: document.getElementById('prod-link').value || "#" };
-            try {
-                const { data, error } = await supabaseClient.from('products').insert([newP]).select();
-                if (error) throw error;
-                products.unshift(data[0]);
-                renderProducts();
-                renderAdminProductList();
-                document.getElementById('prod-name').value = ''; document.getElementById('prod-desc').value = ''; document.getElementById('prod-price').value = ''; document.getElementById('prod-img').value = ''; document.getElementById('prod-link').value = '';
-            } catch (e) { alert("Error al guardar"); }
+            const name = document.getElementById('prod-name').value.trim();
+            if (!name) return alert("El nombre es obligatorio");
+
+            const newProduct = {
+                name: name,
+                desc: document.getElementById('prod-desc').value.trim(),
+                category: document.getElementById('prod-cat').value,
+                price: parseFloat(document.getElementById('prod-price').value) || 9.99,
+                img: document.getElementById('prod-img').value.trim() || 'https://picsum.photos/id/1015/400/500',
+                link: document.getElementById('prod-link').value.trim() || '#'
+            };
+
+            const { data, error } = await supabase.from('products').insert([newProduct]).select();
+            if (error) {
+                console.error(error);
+                alert("Error al guardar: " + error.message);
+                return;
+            }
+
+            products.unshift(data[0]);
+            renderProducts();
+            renderAdminProductList();
+            alert("Producto añadido correctamente");
         }
 
         async function deleteProduct(id) {
-            if (confirm("¿Eliminar producto?")) {
-                try {
-                    const { error } = await supabaseClient.from('products').delete().eq('id', id);
-                    if (error) throw error;
-                    products = products.filter(p => p.id != id);
-                    renderProducts(); renderAdminProductList();
-                } catch (e) { alert("Error al eliminar"); }
+            if (!confirm("¿Eliminar este producto?")) return;
+            const { error } = await supabase.from('products').delete().eq('id', id);
+            if (error) {
+                alert("Error al eliminar");
+                return;
             }
+            products = products.filter(p => p.id != id);
+            renderProducts();
+            renderAdminProductList();
         }
 
         function renderAdminReviewList() {
             const container = document.getElementById('rev-list');
             let html = '';
             reviews.forEach((r) => {
-                html += `<div class="bg-zinc-800 p-5 rounded-2xl"><div class="flex justify-between"><span class="font-medium">${r.name} (${r.stars}★)</span><button onclick="deleteReview('${r.id}')" class="text-red-400 hover:text-red-300">Eliminar</button></div><p class="mt-2 text-zinc-400">"${r.comment}"</p></div>`;
+                html += `<div class="bg-zinc-800 p-5 rounded-2xl">
+                    <div class="flex justify-between"><span class="font-medium">${r.name} (${r.stars}★)</span><button onclick="deleteReview('${r.id}')" class="text-red-400 hover:text-red-300">Eliminar</button></div>
+                    <p class="mt-2 text-zinc-400">"${r.comment}"</p>
+                </div>`;
             });
-            container.innerHTML = html;
+            container.innerHTML = html || '<p class="text-zinc-500">No hay reseñas aún.</p>';
         }
 
         async function addNewReview() {
-            const name = document.getElementById('rev-name').value;
-            if (!name) return alert("Nombre requerido");
-            const newR = { name: name, stars: parseInt(document.getElementById('rev-stars').value), comment: document.getElementById('rev-comment').value };
-            try {
-                const { data, error } = await supabaseClient.from('reviews').insert([newR]).select();
-                if (error) throw error;
-                reviews.unshift(data[0]);
-                renderReviews(); renderAdminReviewList();
-                document.getElementById('rev-name').value = ''; document.getElementById('rev-comment').value = '';
-            } catch (e) { alert("Error al guardar"); }
+            const name = document.getElementById('rev-name').value.trim();
+            if (!name) return alert("El nombre es obligatorio");
+
+            const newReview = {
+                name: name,
+                stars: parseInt(document.getElementById('rev-stars').value),
+                comment: document.getElementById('rev-comment').value.trim()
+            };
+
+            const { data, error } = await supabase.from('reviews').insert([newReview]).select();
+            if (error) {
+                alert("Error al guardar: " + error.message);
+                return;
+            }
+
+            reviews.unshift(data[0]);
+            renderReviews();
+            renderAdminReviewList();
+            alert("Reseña añadida correctamente");
         }
 
         async function deleteReview(id) {
-            if (confirm("¿Eliminar reseña?")) {
-                try {
-                    const { error } = await supabaseClient.from('reviews').delete().eq('id', id);
-                    if (error) throw error;
-                    reviews = reviews.filter(r => r.id != id);
-                    renderReviews(); renderAdminReviewList();
-                } catch (e) { alert("Error al eliminar"); }
-            }
+            if (!confirm("¿Eliminar esta reseña?")) return;
+            const { error } = await supabase.from('reviews').delete().eq('id', id);
+            if (error) return alert("Error al eliminar");
+            reviews = reviews.filter(r => r.id != id);
+            renderReviews();
+            renderAdminReviewList();
         }
 
-        window.onload = () => { loadData(); };
+        window.onload = loadData;
     </script>
 </body>
 </html>
