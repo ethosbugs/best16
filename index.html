@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: 'Inter', system-ui, sans-serif; }
         .title-font { font-family: 'Space Grotesk', sans-serif; }
@@ -100,7 +99,7 @@
                 </div>
             </div>
         </div>
-    </footer>
+    </footer >
 
     <div id="admin-login" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50">
         <div class="bg-zinc-900 p-10 rounded-3xl w-full max-w-md">
@@ -123,48 +122,49 @@
         </div>
     </div>
 
-    <script>
-        // ================== VARIABLES GLOBALES (Al principio) ==================
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+
         const SUPABASE_URL = 'https://sbtyihqwnxdvsainchjb.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNidHlpaHF3bnhkdnNhaW5jaGpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjg5MjM0NTYsImV4cCI6MjA0NDQ5OTQ1Nn0.7X9z3fKz8vL9pQ2mN5bX8vL9pQ2mN5bX8vL9pQ2mN'; 
         
-        let supabaseClient = null;
+        // Inicialización directa e inmune a fallos de CDN clásico
+        window.supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Cargamos los datos iniciales
+        window.loadData();
+    </script>
+
+    <script>
+        // ================== VARIABLES GLOBALES ==================
         let products = [];
         let reviews = [];
         let currentCategory = "Todos";
 
-        // ================== INICIALIZACIÓN SEGURA ==================
-        function initSupabase() {
-            if (typeof Supabase !== 'undefined') {
-                supabaseClient = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                return true;
-            } else {
-                console.error("❌ Error: La librería global de Supabase no está lista en el navegador.");
-                return false;
-            }
-        }
-
         async function loadData() {
-            // Validamos que Supabase esté cargado antes de hacer peticiones
-            if (!supabaseClient && !initSupabase()) {
-                console.error("No se pudo iniciar Supabase. Reintentando...");
+            if (!window.supabaseClient) {
+                // Pequeña espera por si el módulo tarda un milisegundo extra
+                setTimeout(loadData, 200);
                 return;
             }
 
             try {
-                const { data: pData, error: pError } = await supabaseClient.from('products').select('*').order('id', { ascending: false });
-                const { data: rData, error: rError } = await supabaseClient.from('reviews').select('*').order('id', { ascending: false });
+                const { data: pData, error: pError } = await window.supabaseClient.from('products').select('*').order('id', { ascending: false });
+                const { data: rData, error: rError } = await window.supabaseClient.from('reviews').select('*').order('id', { ascending: false });
                 
-                if (pError) console.error("Error cargando productos de la BD:", pError);
-                if (rError) console.error("Error cargando reseñas de la BD:", rError);
+                if (pError) console.error("Error productos:", pError);
+                if (rError) console.error("Error reseñas:", rError);
 
                 products = pData || [];
                 reviews = rData || [];
             } catch(e) {
-                console.error("Error crítico en la conexión:", e);
+                console.error("Error crítico en conexión:", e);
             }
             renderAll();
         }
+
+        // Hacemos la función accesible globalmente
+        window.loadData = loadData;
 
         function renderAll() {
             renderFilters();
@@ -172,7 +172,7 @@
             renderReviews();
         }
 
-        // ================== LOGICA DE RENDERIZADO DOM ==================
+        // ================== LÓGICA DE RENDERIZADO DOM ==================
         function renderFilters() {
             const cats = ["Todos", "Ropa", "Calzado", "Accesorios", "Hogar"];
             let html = '';
@@ -271,11 +271,13 @@
             document.getElementById('admin-login').classList.remove('hidden');
             document.getElementById('password').focus();
         }
+        window.showAdminLogin = showAdminLogin;
 
         function hideLogin() {
             document.getElementById('admin-login').classList.add('hidden');
             document.getElementById('error-msg').classList.add('hidden');
         }
+        window.hideLogin = hideLogin;
 
         function loginAdmin() {
             if (document.getElementById('password').value === "David14") {
@@ -286,10 +288,12 @@
                 document.getElementById('error-msg').classList.remove('hidden');
             }
         }
+        window.loginAdmin = loginAdmin;
 
         function closeAdmin() { 
             document.getElementById('admin-panel').classList.add('hidden'); 
         }
+        window.closeAdmin = closeAdmin;
 
         function switchTab(tab) {
             const tab0 = document.getElementById('tab0');
@@ -338,6 +342,7 @@
                 renderAdminReviewList();
             }
         }
+        window.switchTab = switchTab;
 
         function renderAdminProductList() {
             const container = document.getElementById('prod-list');
@@ -350,7 +355,7 @@
         }
 
         async function addNewProduct() {
-            if (!supabaseClient) return alert("Supabase no está listo.");
+            if (!window.supabaseClient) return alert("Supabase aún no está listo. Espera un segundo.");
             const name = document.getElementById('prod-name').value.trim();
             if (!name) return alert("Nombre requerido");
 
@@ -364,7 +369,7 @@
             };
 
             try {
-                const { data, error } = await supabaseClient.from('products').insert([newP]).select();
+                const { data, error } = await window.supabaseClient.from('products').insert([newP]).select();
                 if (error) {
                     alert("Error Supabase: " + error.message);
                     return;
@@ -372,22 +377,24 @@
                 products.unshift(data[0]);
                 renderProducts();
                 renderAdminProductList();
-                alert("✅ Producto guardado correctamente");
+                alert("✅ Producto añadido correctamente");
             } catch (e) {
                 alert("Error inesperado: " + e.message);
             }
         }
+        window.addNewProduct = addNewProduct;
 
         async function deleteProduct(id) {
-            if (!supabaseClient) return;
+            if (!window.supabaseClient) return;
             if (confirm("¿Eliminar producto?")) {
-                const { error } = await supabaseClient.from('products').delete().eq('id', id);
+                const { error } = await window.supabaseClient.from('products').delete().eq('id', id);
                 if (error) return alert("Error al eliminar");
                 products = products.filter(p => p.id != id);
                 renderProducts();
                 renderAdminProductList();
             }
         }
+        window.deleteProduct = deleteProduct;
 
         function renderAdminReviewList() {
             const container = document.getElementById('rev-list');
@@ -400,7 +407,7 @@
         }
 
         async function addNewReview() {
-            if (!supabaseClient) return alert("Supabase no está listo.");
+            if (!window.supabaseClient) return alert("Supabase aún no está listo.");
             const name = document.getElementById('rev-name').value.trim();
             if (!name) return alert("Nombre requerido");
             const newR = {
@@ -409,7 +416,7 @@
                 comment: document.getElementById('rev-comment').value.trim()
             };
             try {
-                const { data, error } = await supabaseClient.from('reviews').insert([newR]).select();
+                const { data, error } = await window.supabaseClient.from('reviews').insert([newR]).select();
                 if (error) return alert("Error: " + error.message);
                 reviews.unshift(data[0]);
                 renderReviews();
@@ -417,22 +424,23 @@
                 alert("✅ Reseña guardada correctamente");
             } catch (e) { alert("Error al guardar"); }
         }
+        window.addNewReview = addNewReview;
 
         async function deleteReview(id) {
-            if (!supabaseClient) return;
+            if (!window.supabaseClient) return;
             if (confirm("¿Eliminar reseña?")) {
-                const { error } = await supabaseClient.from('reviews').delete().eq('id', id);
+                const { error } = await window.supabaseClient.from('reviews').delete().eq('id', id);
                 if (error) return alert("Error al eliminar");
                 reviews = reviews.filter(r => r.id != id);
                 renderReviews();
                 renderAdminReviewList();
             }
         }
+        window.deleteReview = deleteReview;
 
-        // Ejecución segura del ciclo de vida al cargar la página
+        // Carga inicial pasiva
         document.addEventListener("DOMContentLoaded", () => {
-            initSupabase();
-            loadData();
+            renderFilters();
         });
     </script>
 </body>
