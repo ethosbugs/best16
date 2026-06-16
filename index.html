@@ -18,7 +18,6 @@
 </head>
 <body class="bg-black text-zinc-200 min-h-screen">
 
-    <!-- Navbar -->
     <nav class="border-b border-zinc-800 bg-black/80 backdrop-blur-md fixed w-full z-50">
         <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
             <div class="flex items-center gap-x-3">
@@ -36,7 +35,6 @@
         </div>
     </nav>
 
-    <!-- Hero -->
     <header class="pt-24 pb-16 bg-gradient-to-b from-black via-zinc-950 to-black">
         <div class="max-w-7xl mx-auto px-6">
             <div class="flex flex-col lg:flex-row gap-12 items-center">
@@ -104,7 +102,6 @@
         </div>
     </footer>
 
-    <!-- Admin Login -->
     <div id="admin-login" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50">
         <div class="bg-zinc-900 p-10 rounded-3xl w-full max-w-md">
             <h3 class="text-2xl mb-6">Panel Admin</h3>
@@ -115,7 +112,6 @@
         </div>
     </div>
 
-    <!-- Admin Panel -->
     <div id="admin-panel" class="hidden fixed inset-0 bg-black/90 z-[60] flex items-center justify-center overflow-auto">
         <div class="bg-zinc-900 w-full max-w-6xl mx-4 rounded-3xl my-8">
             <div class="flex border-b border-zinc-700">
@@ -128,25 +124,29 @@
     </div>
 
     <script>
-        // ================== SUPABASE (al principio) ==================
+        // ================== INITIALIZATION ==================
         const SUPABASE_URL = 'https://sbtyihqwnxdvsainchjb.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNidHlpaHF3bnhkdnNhaW5jaGpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjg5MjM0NTYsImV4cCI6MjA0NDQ5OTQ1Nn0.7X9z3fKz8vL9pQ2mN5bX8vL9pQ2mN5bX8vL9pQ2mN'; 
         
         const supabaseClient = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        // ============================================================
 
         let products = [];
         let reviews = [];
         let currentCategory = "Todos";
 
+        // ================== DATA LOADING ==================
         async function loadData() {
             try {
-                const { data: pData } = await supabaseClient.from('products').select('*').order('id', { ascending: false });
-                const { data: rData } = await supabaseClient.from('reviews').select('*').order('id', { ascending: false });
+                const { data: pData, error: pError } = await supabaseClient.from('products').select('*').order('id', { ascending: false });
+                const { data: rData, error: rError } = await supabaseClient.from('reviews').select('*').order('id', { ascending: false });
+                
+                if (pError) console.error("Error productos:", pError);
+                if (rError) console.error("Error reseñas:", rError);
+
                 products = pData || [];
                 reviews = rData || [];
             } catch(e) {
-                console.error("Error cargando datos:", e);
+                console.error("Error crítico cargando datos:", e);
             }
             renderAll();
         }
@@ -157,13 +157,15 @@
             renderReviews();
         }
 
+        // ================== RENDER LOGIC ==================
         function renderFilters() {
             const cats = ["Todos", "Ropa", "Calzado", "Accesorios", "Hogar"];
             let html = '';
             cats.forEach(cat => {
                 html += `<button onclick="setCategory('${cat}')" class="px-6 py-3 rounded-3xl text-sm ${currentCategory === cat ? 'bg-white text-black' : 'border border-zinc-700 hover:bg-zinc-800'}">${cat}</button>`;
             });
-            document.getElementById('category-filters').innerHTML = html;
+            const container = document.getElementById('category-filters');
+            if (container) container.innerHTML = html;
         }
 
         function setCategory(cat) {
@@ -178,18 +180,22 @@
 
         function renderProducts() {
             const grid = document.getElementById('products-grid');
-            const search = document.getElementById('search-input').value.toLowerCase();
+            if (!grid) return;
+
+            const searchInput = document.getElementById('search-input');
+            const search = searchInput ? searchInput.value.toLowerCase() : '';
             let filtered = products;
 
             if (currentCategory !== "Todos") filtered = filtered.filter(p => p.category === currentCategory);
             if (search) filtered = filtered.filter(p => p.name.toLowerCase().includes(search) || (p.desc && p.desc.toLowerCase().includes(search)));
 
+            const noResultsEl = document.getElementById('no-results');
             if (filtered.length === 0) {
-                document.getElementById('no-results').classList.remove('hidden');
+                if (noResultsEl) noResultsEl.classList.remove('hidden');
                 grid.innerHTML = '';
                 return;
             }
-            document.getElementById('no-results').classList.add('hidden');
+            if (noResultsEl) noResultsEl.classList.add('hidden');
 
             let html = '';
             filtered.forEach(product => {
@@ -214,6 +220,8 @@
 
         function renderReviews() {
             const container = document.getElementById('reviews-grid');
+            if (!container) return;
+
             let html = '';
             reviews.forEach(r => {
                 let stars = '★'.repeat(r.stars) + '☆'.repeat(5 - r.stars);
@@ -236,12 +244,14 @@
         function copyCode() {
             navigator.clipboard.writeText("BEST16");
             const btn = document.getElementById('copy-btn');
+            if (!btn) return;
             const orig = btn.textContent;
             btn.textContent = "¡COPIADO!";
             btn.style.backgroundColor = '#10b981';
             setTimeout(() => { btn.textContent = orig; btn.style.backgroundColor = ''; }, 1800);
         }
 
+        // ================== ADMIN ACTIONS ==================
         function showAdminLogin() {
             document.getElementById('admin-login').classList.remove('hidden');
             document.getElementById('password').focus();
@@ -267,14 +277,21 @@
         }
 
         function switchTab(tab) {
-            document.getElementById('tab0').classList.toggle('border-b-2', tab === 0);
-            document.getElementById('tab0').classList.toggle('border-sky-400', tab === 0);
-            document.getElementById('tab0').classList.toggle('text-zinc-400', tab !== 0);
-            document.getElementById('tab1').classList.toggle('border-b-2', tab === 1);
-            document.getElementById('tab1').classList.toggle('border-sky-400', tab === 1);
-            document.getElementById('tab1').classList.toggle('text-zinc-400', tab !== 1);
+            const tab0 = document.getElementById('tab0');
+            const tab1 = document.getElementById('tab1');
+            
+            if(tab0 && tab1) {
+                tab0.classList.toggle('border-b-2', tab === 0);
+                tab0.classList.toggle('border-sky-400', tab === 0);
+                tab0.classList.toggle('text-zinc-400', tab !== 0);
+                tab1.classList.toggle('border-b-2', tab === 1);
+                tab1.classList.toggle('border-sky-400', tab === 1);
+                tab1.classList.toggle('text-zinc-400', tab !== 1);
+            }
 
             const content = document.getElementById('admin-content');
+            if (!content) return;
+
             if (tab === 0) {
                 content.innerHTML = `
                     <h3 class="text-2xl font-semibold mb-8">Añadir Producto</h3>
@@ -309,6 +326,7 @@
 
         function renderAdminProductList() {
             const container = document.getElementById('prod-list');
+            if (!container) return;
             let html = '';
             products.forEach((p) => {
                 html += `<div class="flex justify-between items-center bg-zinc-800 p-4 rounded-2xl"><div><div class="font-medium">${p.name}</div><div class="text-xs text-zinc-500">${p.category} - ${p.price}€</div></div><button onclick="deleteProduct('${p.id}')" class="text-red-400 hover:text-red-300">Eliminar</button></div>`;
@@ -333,7 +351,6 @@
                 const { data, error } = await supabaseClient.from('products').insert([newP]).select();
                 if (error) {
                     alert("Error Supabase: " + error.message);
-                    console.error(error);
                     return;
                 }
                 products.unshift(data[0]);
@@ -341,7 +358,6 @@
                 renderAdminProductList();
                 alert("✅ Producto guardado correctamente");
             } catch (e) {
-                console.error(e);
                 alert("Error inesperado: " + e.message);
             }
         }
@@ -358,6 +374,7 @@
 
         function renderAdminReviewList() {
             const container = document.getElementById('rev-list');
+            if (!container) return;
             let html = '';
             reviews.forEach((r) => {
                 html += `<div class="bg-zinc-800 p-5 rounded-2xl"><div class="flex justify-between"><span class="font-medium">${r.name} (${r.stars}★)</span><button onclick="deleteReview('${r.id}')" class="text-red-400 hover:text-red-300">Eliminar</button></div><p class="mt-2 text-zinc-400">"${r.comment}"</p></div>`;
@@ -393,7 +410,10 @@
             }
         }
 
-        window.onload = () => { loadData(); };
+        // Evento seguro para iniciar la aplicación una vez cargado todo el DOM
+        document.addEventListener("DOMContentLoaded", () => {
+            loadData();
+        });
     </script>
 </body>
 </html>
